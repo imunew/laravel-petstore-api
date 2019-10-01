@@ -21,8 +21,7 @@ class DestroyTest extends TestCase
         $this->assertResponseCompliantForOpenApiSpec(
             $response,
             'DELETE',
-            '/pets/{id}',
-            204
+            '/pets/{id}'
         );
     }
 }

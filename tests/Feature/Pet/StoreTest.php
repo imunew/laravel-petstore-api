@@ -18,7 +18,7 @@ class StoreTest extends TestCase
         $this->validatePost(
             '/pets',
             200,
-            'api/pets',
+            '/api/pets',
             [
                 'name' => 'newPet',
             ]
@@ -33,7 +33,7 @@ class StoreTest extends TestCase
     public function storeFailByInvalidPost(array $invalidPost)
     {
         $this->expectException(AssertionFailedError::class);
-        $this->assertRequestCompliantForOpenApiSpec($invalidPost, 'POST', '/pets');
+        $this->assertRequestCompliantForOpenApiSpec($invalidPost, 'POST', '/api/pets');
     }
 
     /**
@@ -44,6 +44,7 @@ class StoreTest extends TestCase
         return [
             [[]],
             [['name' => null]],
+            [['name' => 123]],
         ];
     }
 }

@@ -21,8 +21,7 @@ class ShowTest extends TestCase
         $this->assertResponseCompliantForOpenApiSpec(
             $response,
             'GET',
-            '/pets/{id}',
-            200
+            '/pets/{id}'
         );
     }
 }

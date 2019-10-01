@@ -20,8 +20,7 @@ class IndexTest extends TestCase
         $this->assertResponseCompliantForOpenApiSpec(
             $response,
             'GET',
-            '/pets',
-            200
+            '/pets'
         );
     }
 }

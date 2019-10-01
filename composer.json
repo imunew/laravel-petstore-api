@@ -17,10 +17,12 @@
     "require-dev": {
         "facade/ignition": "^1.4",
         "fzaninotto/faker": "^1.4",
-        "justinrainbow/json-schema": "^5.2",
+        "league/openapi-psr7-validator": "^0.3.2",
         "mockery/mockery": "^1.0",
         "nunomaduro/collision": "^3.0",
-        "phpunit/phpunit": "^8.0"
+        "nyholm/psr7": "^1.2",
+        "phpunit/phpunit": "^8.0",
+        "symfony/psr-http-message-bridge": "^1.2"
     },
     "config": {
         "optimize-autoloader": true,

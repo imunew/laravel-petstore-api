@@ -3,8 +3,11 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\TestResponse;
-use JsonSchema\Exception\ValidationException;
-use JsonSchema\Validator;
+use Nyholm\Psr7\Factory\Psr17Factory;
+use OpenAPIValidation\PSR7\Exception\ValidationFailed;
+use OpenAPIValidation\PSR7\OperationAddress;
+use OpenAPIValidation\PSR7\ValidatorBuilder;
+use Symfony\Bridge\PsrHttpMessage\Factory\PsrHttpFactory;
 use Tests\TestCase;
 
 /**
@@ -19,78 +22,58 @@ trait OpenApiSpecAssertions
      * @param TestResponse $testResponse
      * @param string $method
      * @param string $path
-     * @param int $exceptStatusCode
      */
     protected function assertResponseCompliantForOpenApiSpec(
         TestResponse $testResponse,
         string $method,
-        string $path,
-        int $exceptStatusCode
+        string $path
     ) {
-        $validator = new Validator();
-
-        $response = $testResponse->isEmpty()
-            ? null
-            : json_decode(json_encode($testResponse->json()))
+        $validator = (new ValidatorBuilder())
+            ->fromYamlFile(__DIR__. '/../ApiSpec/petstore-expanded.yaml')
+            ->getResponseValidator()
         ;
-        $apiSpec = json_decode(file_get_contents(__DIR__. '/../ApiSpec/petstore-expanded.json'));
 
-        if (!property_exists($apiSpec, $path)) {
-            self::fail(sprintf("[%s] The specified path is incorrect\n", $path));
-        }
+        $operation = new OperationAddress($path, strtolower($method)) ;
 
-        if (!property_exists($apiSpec->{$path}, strtolower($method))) {
-            self::fail(sprintf("[%s] Method is incorrect\n", $method));
-        }
+        $psr17Factory = new Psr17Factory();
+        $psrHttpFactory = new PsrHttpFactory($psr17Factory, $psr17Factory, $psr17Factory, $psr17Factory);
+        $psrResponse = $psrHttpFactory->createResponse($testResponse->baseResponse);
 
-        if (!property_exists($apiSpec->{$path}->{strtolower($method)}->responses, $exceptStatusCode)) {
-            self::fail(sprintf("[%s] Status code is incorrect\n", $exceptStatusCode));
-        }
-        $schema = $apiSpec->{$path}->{strtolower($method)}->responses->{$exceptStatusCode};
-        $validator->validate($response, $schema);
-
-        if (!$validator->isValid()) {
-            foreach ($validator->getErrors() as $error) {
-                self::fail(sprintf("[%s] %s\n", $error['property'], $error['message']));
-            }
+        try {
+            $validator->validate($operation, $psrResponse);
+        } catch (ValidationFailed $validationFailed) {
+            self::fail($validationFailed->getPrevious()->getMessage());
         }
     }
 
     /**
      * @param array $requestBody
      * @param string $method
-     * @param string $path
+     * @param string $uri
      */
     protected function assertRequestCompliantForOpenApiSpec(
         array $requestBody,
         string $method,
-        string $path
+        string $uri
     ) {
-        $validator = new Validator();
+        $validator = (new ValidatorBuilder())
+            ->fromYamlFile(__DIR__. '/../ApiSpec/petstore-expanded.yaml')
+            ->getRequestValidator()
+        ;
 
-        $apiSpec = json_decode(file_get_contents(__DIR__. '/../ApiSpec/petstore-expanded.json'));
-
-        if (!property_exists($apiSpec, $path)) {
-            self::fail(sprintf("[%s] The specified path is incorrect\n", $path));
-        }
-
-        if (!property_exists($apiSpec->{$path}, strtolower($method))) {
-            self::fail(sprintf("[%s] Method is incorrect\n", $method));
-        }
-
-        $request = (object) $requestBody;
-        $schema = optional($apiSpec->{$path}->{strtolower($method)})->body;
-        if (empty($schema) && empty($requestBody)) {
-            return;
-        }
+        $psr17Factory = new Psr17Factory();
+        $json = json_encode($requestBody, JSON_UNESCAPED_UNICODE);
+        $stream = $psr17Factory->createStream($json);
+        $stream->rewind();
+        $request = $psr17Factory->createRequest(strtolower($method), $uri)
+            ->withBody($stream)
+            ->withHeader('Content-Type', 'application/json')
+        ;
 
         try {
-            $validator->validate($request, $schema, Validator::ERROR_ALL);
-        } catch (ValidationException $validationException) {
-            self::fail(implode(PHP_EOL, [
-                "{$method} {$path} ". $validationException->getMessage(),
-                json_encode($requestBody, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT)
-            ]));
+            $validator->validate($request);
+        } catch (ValidationFailed $validationFailed) {
+            self::fail($validationFailed->getPrevious()->getMessage());
         }
     }
 
@@ -112,7 +95,7 @@ trait OpenApiSpecAssertions
         string $format = 'json'
     ) {
         $method = 'POST';
-        $this->assertRequestCompliantForOpenApiSpec($data, $method, $schemaPath);
+        $this->assertRequestCompliantForOpenApiSpec($data, $method, $uri);
 
         $response = ($format === 'json')
             ? $this->postJson($uri, $data, $headers)
@@ -120,7 +103,7 @@ trait OpenApiSpecAssertions
         ;
         $response->assertStatus($exceptStatusCode);
 
-        $this->assertResponseCompliantForOpenApiSpec($response, $method, $schemaPath, $exceptStatusCode);
+        $this->assertResponseCompliantForOpenApiSpec($response, $method, $schemaPath);
         return $response;
     }
 
@@ -142,7 +125,7 @@ trait OpenApiSpecAssertions
         string $format = 'json'
     ) {
         $method = 'PUT';
-        $this->assertRequestCompliantForOpenApiSpec($data, $method, $schemaPath);
+        $this->assertRequestCompliantForOpenApiSpec($data, $method, $uri);
 
         $response = ($format === 'json')
             ? $this->putJson($uri, $data, $headers)
@@ -150,7 +133,7 @@ trait OpenApiSpecAssertions
         ;
         $response->assertStatus($exceptStatusCode);
 
-        $this->assertResponseCompliantForOpenApiSpec($response, $method, $schemaPath, $exceptStatusCode);
+        $this->assertResponseCompliantForOpenApiSpec($response, $method, $schemaPath);
         return $response;
     }
 }
