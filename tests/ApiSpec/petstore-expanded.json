@@ -1,0 +1,183 @@
+{
+  "/pets": {
+    "get": {
+      "responses": {
+        "200": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "name"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "tag": {
+                "type": "string"
+              },
+              "id": {
+                "type": "integer",
+                "format": "int64",
+                "minimum": -9223372036854776000,
+                "maximum": 9223372036854776000
+              }
+            }
+          },
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "default": {
+          "type": "object",
+          "required": [
+            "code",
+            "message"
+          ],
+          "properties": {
+            "code": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": -2147483648,
+              "maximum": 2147483647
+            },
+            "message": {
+              "type": "string"
+            }
+          },
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        }
+      }
+    },
+    "post": {
+      "body": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "tag": {
+            "type": "string"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-04/schema#"
+      },
+      "responses": {
+        "200": {
+          "type": "object",
+          "required": [
+            "id",
+            "name"
+          ],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "tag": {
+              "type": "string"
+            },
+            "id": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": -9223372036854776000,
+              "maximum": 9223372036854776000
+            }
+          },
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "default": {
+          "type": "object",
+          "required": [
+            "code",
+            "message"
+          ],
+          "properties": {
+            "code": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": -2147483648,
+              "maximum": 2147483647
+            },
+            "message": {
+              "type": "string"
+            }
+          },
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        }
+      }
+    }
+  },
+  "/pets/{id}": {
+    "get": {
+      "responses": {
+        "200": {
+          "type": "object",
+          "required": [
+            "id",
+            "name"
+          ],
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "tag": {
+              "type": "string"
+            },
+            "id": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": -9223372036854776000,
+              "maximum": 9223372036854776000
+            }
+          },
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        },
+        "default": {
+          "type": "object",
+          "required": [
+            "code",
+            "message"
+          ],
+          "properties": {
+            "code": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": -2147483648,
+              "maximum": 2147483647
+            },
+            "message": {
+              "type": "string"
+            }
+          },
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        }
+      }
+    },
+    "delete": {
+      "responses": {
+        "204": {},
+        "default": {
+          "type": "object",
+          "required": [
+            "code",
+            "message"
+          ],
+          "properties": {
+            "code": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": -2147483648,
+              "maximum": 2147483647
+            },
+            "message": {
+              "type": "string"
+            }
+          },
+          "$schema": "http://json-schema.org/draft-04/schema#"
+        }
+      }
+    }
+  }
+}
